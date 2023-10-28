@@ -19,6 +19,14 @@
     "ethers": "^5.7.2",
     "typescript": "^4.6.4",
     "vite": "^3.1.0",
-    "web3": "^1.8.0"
+    "web3": "^1.8.0",
+    "@mui/material": "5.14.15",
+    "@emotion/react": "11.11.1",
+    "@emotion/styled": "11.11.0",
+    "@fontsource/roboto": "5.0.8",
+    "@mui/icons-material": "5.14.15",
+    "zustand": "4.4.4",
+    "@redux-devtools/extension": "3.2.5",
+    "simple-zustand-devtools": "1.1.0"
   }
 }

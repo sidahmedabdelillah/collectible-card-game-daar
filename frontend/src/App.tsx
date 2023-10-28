@@ -1,49 +1,41 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import styles from './styles.module.css'
-import * as ethereum from '@/lib/ethereum'
-import * as main from '@/lib/main'
-
-type Canceler = () => void
-const useAffect = (
-  asyncEffect: () => Promise<Canceler | void>,
-  dependencies: any[] = []
-) => {
-  const cancelerRef = useRef<Canceler | void>()
-  useEffect(() => {
-    asyncEffect()
-      .then(canceler => (cancelerRef.current = canceler))
-      .catch(error => console.warn('Uncatched error', error))
-    return () => {
-      if (cancelerRef.current) {
-        cancelerRef.current()
-        cancelerRef.current = undefined
-      }
-    }
-  }, dependencies)
-}
-
-const useWallet = () => {
-  const [details, setDetails] = useState<ethereum.Details>()
-  const [contract, setContract] = useState<main.Main>()
-  useAffect(async () => {
-    const details_ = await ethereum.connect('metamask')
-    if (!details_) return
-    setDetails(details_)
-    const contract_ = await main.init(details_)
-    if (!contract_) return
-    setContract(contract_)
-  }, [])
-  return useMemo(() => {
-    if (!details || !contract) return
-    return { details, contract }
-  }, [details, contract])
-}
+import { useWalletStore } from './store/walletStore'
+import { useCollectionsStore } from './store/collectionsStore'
 
 export const App = () => {
-  const wallet = useWallet()
+  const walletStore = useWalletStore()
+  const collectionsStore = useCollectionsStore()
+
+  useEffect(() => {
+    async function init() {
+      await walletStore.updateWallet()
+      await collectionsStore.fetchCollections()
+    }
+    init()
+  }, [])
+
+  const mint = async () => {
+    const tx = await walletStore.mainContract?.createCollection(
+      'first collection 2',
+      20
+    )
+    await tx?.wait()
+  }
+
   return (
     <div className={styles.body}>
-      <h1>Welcome to Pokémon TCG</h1>
+      <h1>{walletStore.isAdmin() ? 'Hello BOSS' : 'Hello budy'}</h1>
+      <h1>Balance : {walletStore.balance}</h1>
+      <h1>Collections</h1>
+      <div>
+        {collectionsStore.collections.map(collection => (
+          <h1 key={collection.name}>
+            {collection.name} - {collection.cardCount}
+          </h1>
+        ))}
+      </div>
+      <button onClick={() => mint()}>Mint</button>
     </div>
   )
 }
