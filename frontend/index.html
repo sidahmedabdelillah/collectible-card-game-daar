@@ -1,20 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pokémon TCG</title>
-    
-  </head>
-  <style>
-    .bodyColor {
-      background-color:#3a2a4b;
 
-    }
-  </style>
-  <body class="bodyColor">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans&family=Poppins&family=Sometype+Mono&display=swap"
+    rel="stylesheet">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"
+    integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS"
+    crossorigin="anonymous"></script>
+  <title>Pokémon TCG</title>
+
+</head>
+<style>
+  .bodyColor {
+    background-color: #3a2a4b;
+
+  }
+
+  /* styles.css */
+  .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+
+  .card {
+    max-width: 345px;
+    margin: 10px;
+  }
+
+  .card img {
+    height: 300px;
+    width: 100%;
+  }
+
+  .image-text-container {
+    display: flex;
+    align-items: center;
+    /* Align items vertically in the center */
+  }
+
+  .text-container {
+    position: absolute;
+    margin-left: 10%;
+    margin-bottom: 5%;
+  }
+
+  .image-text-container img {
+    /* Adjust the maximum width of the image as needed */
+    margin-right: 10px;
+    width: 40%;
+
+    margin-top: -5%
+      /* Add spacing between the image and text */
+  }
+
+  .titre_collection {
+    font-weight: bold;
+    color: aliceblue;
+    font-size: 30px;
+    width: 100%;
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .date_titre {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+  }
+
+  .box-number {
+    background-image: url('./public/image-bg.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+  }
+
+  .container {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .box {
+    flex: 1;
+    border: 1px solid #3a2a4b;
+    padding: 10px;
+    margin: 10px;
+    /* Add margin between divs */
+    border-radius: 10px;
+    /* Add border-radius */
+    background-color: #3a2a4b;
+    text-align: center;
+    color: aliceblue;
+  }
+
+  .font_titre_count {
+    font-family: 'Poppins', sans-serif;
+    font-size: 30px;
+  }
+  
+</style>
+
+<body class="bodyColor">
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

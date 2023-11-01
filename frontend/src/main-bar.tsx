@@ -25,27 +25,29 @@ export default function MainBar() {
               height: '100%',
             }}
           >
-            <img
-              src="../public/cards.png" // Replace with the URL of your image
-              alt="Your Image"
-              style={{ width: "40%", marginRight: "30%", marginBottom: "15%" }}
-            />
+
+            <div className="image-text-container">
+              <img src="../public/bg.png" alt="green iguana" />
+              <div className="text-container">
+                <div className='titre_collection'>My Magic Collections</div>
+                <div className='date_titre'>created at 24h |update 5 minutes ago</div>
+              </div>
+            </div>
           </Box>
+
         </Grid>
-        <Box sx={{ borderRadius: '10px', display: 'flex', gap: '16px' ,backgroundColor:"#26193b",height:"200px",marginTop:"1%" ,width:"30%"}}>
-          <Paper elevation={3} sx={{ borderRadius: '12px', padding: '16px', marginBottom: '16px',height:"150px",marginTop:"3%",marginLeft:"5%" }}>
-            <Typography variant="h6">Ethereum</Typography>
-            <Typography>200</Typography>
-          </Paper>
-          <Paper elevation={3} sx={{ borderRadius: '12px', padding: '16px', marginBottom: '16px',height:"150px",marginTop:"3%"  }}>
-            <Typography variant="h6">NFT</Typography>
-            <Typography>600</Typography>
-          </Paper>
-      
-          <Paper elevation={3} sx={{ borderRadius: '12px', padding: '16px',height:"150px",marginTop:"3%",marginRight:"5%" }}>
-            <Typography variant="h6">Collections</Typography>
-            <Typography>150</Typography>
-          </Paper>
+        <Box className="box-number" sx={{ borderRadius: '10px', display: 'flex', gap: '16px', backgroundColor: "#26193b", height: "200px", marginTop: "1%", width: "45%" }}>
+          <div className="container">
+            <div className="box">
+              <p className='font_titre_count'>Ethereum</p>
+            </div>
+            <div className="box">
+              <p className='font_titre_count'>NFT</p>
+            </div>
+            <div className="box">
+              <p className='font_titre_count'>NFT</p>
+            </div>
+          </div>
         </Box>
       </Grid>
     </Box>

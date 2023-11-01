@@ -29,8 +29,14 @@ const sidebarData: SidebarItem[] = [
     text: 'Collections',
     icon: <ViewSidebarIcon />,
     children: [
+      { text: <TextField label="Add Collection"    sx={{
+        '& input': {
+          color: 'white', // Text color for input field
+        },
+        padding: '8px', // Padding
+      }}  />, icon: <ViewSidebarIcon /> }, // Use TextField for input
       { text: 'My Magic Collections', icon: <ViewSidebarIcon /> },
-      { text: <TextField label="Add Collection" />, icon: <ViewSidebarIcon /> }, // Use TextField for input
+     
     ],
   },
 ];
