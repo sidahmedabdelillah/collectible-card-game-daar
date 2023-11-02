@@ -6,7 +6,7 @@ export default function CardComponent({ images }: { images: string[] }) {
   return (
     <div className="cards-container">
       {images.map((image, index) => (
-        <div className="card">
+        <div className="card" key={image}>
           <img src={image}  />
         </div>
       ))}

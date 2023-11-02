@@ -5,6 +5,7 @@ import "./CardNft.sol";
 
 contract Collection is Ownable {
   string public name;
+  string public collectionId;
   uint256 public cardCount;
   // list of CardNft nfts
   uint256[] public cards;
@@ -12,11 +13,13 @@ contract Collection is Ownable {
 
   constructor(
     string memory _name,
+    string memory _collectionId,
     uint256 _cardCount,
     address cardNftContract
   ) Ownable(msg.sender) {
     name = _name;
     cardCount = _cardCount;
+    collectionId = _collectionId;
     _cardNftContract = cardNftContract;
   }
 

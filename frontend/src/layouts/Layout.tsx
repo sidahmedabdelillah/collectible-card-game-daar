@@ -3,7 +3,10 @@ import SideBar from '@/components/SideBar'
 import {
   Alert,
   AlertColor,
+  Backdrop,
   Box,
+  Button,
+  CircularProgress,
   CssBaseline,
   Snackbar,
   ThemeProvider,
@@ -120,45 +123,114 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     severity: 'success',
   })
   const [cardsImages, setCardImages] = useState<string[]>([])
+  const [isReadyToMint, setIsReadyToMint] = useState(false)
+  const [collectionToMint, setCollectionToMint] = useState<
+    GetCollectionResponse['data'] | null
+  >(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   const onClickAddButton = async (collectionId: string) => {
     try {
+      setIsLoading(true)
       const {
         data: { data },
       }: AxiosResponse<GetCollectionResponse> = await axios.get(
-        `https://api.pokemontcg.io/v2/sets/${collectionId}`
+        `http://localhost:3000/api/sets/${collectionId}`
       )
 
+      setCollectionToMint(data)
+
       const cards: AxiosResponse<GetCardsReponse> = await axios.get(
-        `https://api.pokemontcg.io/v2/cards`,
-        {
-          params: {
-            q: `id:${collectionId}-*`,
-          },
-        }
+        `http://localhost:3000/api/collections/${collectionId}/cards`
       )
 
       const images = cards.data.data.map(c => c.images.small)
       setCardImages(images)
+      setIsReadyToMint(true)
     } catch (err) {
       setSnackBarData({
         message: 'This set doesnt exist',
         severity: 'error',
       })
       setIsSnackbarOpen(true)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  useEffect(() => {}, [])
+  const getCardsForCollection = async (collectionId: string) => {
+    const cards: AxiosResponse<GetCardsReponse> = await axios.get(
+      `http://localhost:3000/api/collections/${collectionId}/cards`
+    )
+    const images = cards.data.data.map(c => c.images.small)
+    setCardImages(images)
+  }
+
+  const onClickMintButton = async () => {
+    try {
+      if (!walletStore.mainContract || !collectionToMint) {
+        console.log('returning')
+        return
+      }
+
+      const minting = await walletStore.mainContract?.createCollection(
+        collectionToMint?.name,
+        collectionToMint?.id,
+        collectionToMint?.total
+      )
+
+      await minting.wait()
+      setIsReadyToMint(false)
+
+      await collectionsStore.fetchCollections()
+    } catch (err) {
+      console.log(err)
+    }
+  }
+
+  useEffect(() => {
+    const unsub = useCollectionsStore.subscribe((state, prevState) => {
+      if (
+        state.activeCollection !== prevState.activeCollection &&
+        state.activeCollection != null
+      ) {
+        getCardsForCollection(state.activeCollection.collectionId)
+      }
+    })
+    return unsub
+  }, [])
+
+  useEffect(() => {
+    const init = async () => {
+      await walletStore.updateWallet()
+      await collectionsStore.fetchCollections()
+    }
+
+    init()
+  }, [])
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar />
       <SideBar onClickAddButton={onClickAddButton} />
       <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <MainBar />
-        <Box sx={{ marginTop: '1%' }}>
-          <CardCompenet images={cardsImages} />
+        {/* <MainBar /> */}
+        <Box sx={{ marginTop: '3rem' }}>
+          {isReadyToMint && (
+            <Button onClick={onClickMintButton}> Mint Collection </Button>
+          )}
+          {!isLoading ? (
+            <CardCompenet images={cardsImages} />
+          ) : (
+            <Backdrop
+              sx={{ color: '#fff', zIndex: 10 }}
+              open={isLoading}
+              onClick={() => setIsLoading(false)}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          )}
         </Box>
       </Box>
       <Snackbar

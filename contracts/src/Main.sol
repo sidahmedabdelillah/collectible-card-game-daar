@@ -3,6 +3,8 @@ pragma solidity ^0.8;
 
 import "./Collection.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
 
 contract Main is Ownable {
   uint private count;
@@ -14,6 +16,7 @@ contract Main is Ownable {
 
   struct CollectionStruct {
     string name;
+    string collectionId;
     uint256 cardCount;
     uint256[] cards;
   }
@@ -25,17 +28,20 @@ contract Main is Ownable {
 
   function createCollection(
     string calldata name,
+    string calldata collectionId,
     uint256 cardCount
   ) external onlyOwner {
     Collection newCollection = new Collection(
       name,
+      collectionId,
       cardCount,
       _cardNftContract
     );
     CardNFT cardNFT = CardNFT(_cardNftContract);
-    for (uint i = 0; i < cardCount; i++) {
+    for (uint i = 1; i <= cardCount; i++) {
       // create card
-      uint256 cardId = cardNFT.safeMint(owner());
+      uint256 cardId = cardNFT.safeMint(owner(), Strings.toString(count++));
+      
       // add to cards
       newCollection.addCard(cardId);
     }
@@ -55,6 +61,7 @@ contract Main is Ownable {
       Collection collection = collections[i];
       // get name
       string memory name = collection.name();
+      string memory collectionId = collection.collectionId();
       // get cardCount
       uint256 cardCount = collection.cardCount();
       // get cardNftContract
@@ -62,6 +69,7 @@ contract Main is Ownable {
       // create collectionStruct
       CollectionStruct memory collectionStruct = CollectionStruct(
         name,
+        collectionId,
         cardCount,
         cards
       );
@@ -78,6 +86,7 @@ contract Main is Ownable {
     return
       CollectionStruct(
         collection.name(),
+        collection.collectionId(),
         collection.cardCount(),
         collection.getCards()
       );
@@ -90,6 +99,7 @@ contract Main is Ownable {
     return
       CollectionStruct(
         collection.name(),
+        collection.collectionId(),
         collection.cardCount(),
         collection.getCards()
       );

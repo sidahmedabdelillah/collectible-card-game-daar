@@ -17,6 +17,7 @@ import {
   createTheme,
 } from '@mui/material'
 import { useState } from 'react'
+import { useCollectionsStore } from '@/store/collectionsStore'
 
 const drawerWidth = 240
 
@@ -24,13 +25,6 @@ export type NavItemType = {
   title: string
   count?: number
 }
-
-const Collections: NavItemType[] = [
-  {
-    title: 'xy1',
-    count: 245
-  },
-]
 
 const NavMenuItem = ({
   item,
@@ -97,6 +91,7 @@ export default function SideBar({
 }: {
   onClickAddButton: (id: string) => any
 }) {
+  const collectionStore = useCollectionsStore()
   const [collectionId, setCollectionId] = useState('')
 
   return (
@@ -143,13 +138,16 @@ export default function SideBar({
             </Box>
           }
         >
-          {Collections.map((item, index) => (
+          {collectionStore.collections.map((collection, index) => (
             <NavMenuItem
-              item={item}
+              item={{
+                title: collection.name,
+                count: collection.cardCount,
+              }}
               level={0.5}
-              onClick={() => 5}
-              key={item.title}
-              isActive={false}
+              onClick={() => collectionStore.setActiveCollection(collection)}
+              key={collection.name}
+              isActive={collection.collectionId == collectionStore.activeCollection?.collectionId}
             />
           ))}
 

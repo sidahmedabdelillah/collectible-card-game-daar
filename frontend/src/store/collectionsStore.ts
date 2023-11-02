@@ -7,27 +7,35 @@ import { WalletState, useWalletStore } from './walletStore'
 
 export interface Collection {
   name: string
+  collectionId: string
   cardCount: number
   ntfIds: number[]
 }
 
 interface CollectionsStore {
   collections: Collection[]
+  activeCollection: Collection | null
   getCollection: (name: string | number) => Collection
   fetchCollections: () => Promise<void>
+  setActiveCollection: (collection: Collection) => void
 }
 
 const collectionStructResponseToCollection = (
-  res: [string, bigint, bigint[]]
+  res: [string, string, bigint, bigint[]]
 ) => ({
   name: res[0],
-  cardCount: Number(res[1]),
-  ntfIds: res[2].map(n => Number(n)),
+  collectionId: res[1],
+  cardCount: Number(res[2]),
+  ntfIds: res[3].map(n => Number(n)),
 })
 
 export const useCollectionsStore = create<CollectionsStore>()(
   devtools((set, get) => ({
     collections: [],
+    activeCollection: null,
+    setActiveCollection: (collection: Collection) => {
+      set({ ...get(), activeCollection: collection })
+    },
     getCollection: (name: string | number) => {
       if (typeof name === 'number') return get().collections[name]
       return get().collections.find(c => c.name === name)!
