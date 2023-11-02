@@ -1,15 +1,15 @@
-import * as React from 'react';
-import Card from '@mui/material/Card';
-import CardMedia from '@mui/material/CardMedia';
+import * as React from 'react'
+import Card from '@mui/material/Card'
+import CardMedia from '@mui/material/CardMedia'
 
-export default function CardComponent() {
+export default function CardComponent({ images }: { images: string[] }) {
   return (
-    <Card sx={{ maxWidth: 345 }}>
-      <CardMedia
-        sx={{ height: 300 }}
-        image="../public/card_unique.jpg"
-        title="green iguana"
-      />
-    </Card>
-  );
+    <div className="cards-container">
+      {images.map((image, index) => (
+        <div className="card">
+          <img src={image}  />
+        </div>
+      ))}
+    </div>
+  )
 }
