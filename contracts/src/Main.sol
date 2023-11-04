@@ -5,7 +5,6 @@ import "./Collection.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-
 contract Main is Ownable {
   uint private count;
 
@@ -29,6 +28,7 @@ contract Main is Ownable {
   function createCollection(
     string calldata name,
     string calldata collectionId,
+    string[] calldata cardIds,
     uint256 cardCount
   ) external onlyOwner {
     Collection newCollection = new Collection(
@@ -38,10 +38,10 @@ contract Main is Ownable {
       _cardNftContract
     );
     CardNFT cardNFT = CardNFT(_cardNftContract);
-    for (uint i = 1; i <= cardCount; i++) {
+    for (uint i = 0; i < cardCount; i++) {
       // create card
-      uint256 cardId = cardNFT.safeMint(owner(), Strings.toString(count++));
-      
+      uint256 cardId = cardNFT.safeMint(owner(), cardIds[i]);
+
       // add to cards
       newCollection.addCard(cardId);
     }

@@ -30,7 +30,8 @@ contract CardNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   function safeMint(address to, string memory cardId) public returns (uint256) {
     uint256 tokenId = _nextTokenId++;
     _safeMint(to, tokenId);
-    _setTokenURI(tokenId, cardId);
+    console.log(string.concat(_baseTokenURI , cardId));
+    _setTokenURI(tokenId, string.concat(_baseTokenURI , cardId));
     return tokenId;
   }
 

@@ -33,12 +33,6 @@ const config: HardhatUserConfig = {
   typechain: {
     outDir: '../typechain',
   },
-  networks: {
-    hardhat: {
-      gas: 20,
-      loggingEnabled: true,
-    }
-  }
 }
 
 export default config

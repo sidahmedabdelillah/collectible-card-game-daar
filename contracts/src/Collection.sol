@@ -23,7 +23,6 @@ contract Collection is Ownable {
     _cardNftContract = cardNftContract;
   }
 
-
   function addCard(uint256 cardId) external onlyOwner {
     cards.push(cardId);
   }

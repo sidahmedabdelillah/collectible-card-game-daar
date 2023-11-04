@@ -10,11 +10,7 @@ import {
   Chip,
   ListItem,
   ListItemButton,
-  ListItemIcon,
   ListItemText,
-  TextField,
-  ThemeProvider,
-  createTheme,
 } from '@mui/material'
 import { useState } from 'react'
 import { useCollectionsStore } from '@/store/collectionsStore'

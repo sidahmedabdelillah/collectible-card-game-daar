@@ -13,11 +13,11 @@ import {
   createTheme,
 } from '@mui/material'
 import { PropsWithChildren, useEffect, useState } from 'react'
-import CardCompenet from '../card-compenet'
 import { MainBar } from '@/components/MainBar'
 import { useWalletStore } from '@/store/walletStore'
 import { useCollectionsStore } from '@/store/collectionsStore'
 import axios, { AxiosResponse } from 'axios'
+import PokeCard from '@/components/PokeCard'
 // move this to a separate file later
 
 export type GetCollectionResponse = {
@@ -45,9 +45,10 @@ export type GetCollectionResponse = {
 export type CardType = {
   id: string
   name: string
+  level: number
+  hp: number
   supertype: string
   subtypes: Array<string>
-  hp: string
   types: Array<string>
   evolvesTo: Array<string>
   rules: Array<string>
@@ -122,7 +123,9 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     message: '',
     severity: 'success',
   })
-  const [cardsImages, setCardImages] = useState<string[]>([])
+  const [cardsImages, setCardImages] = useState<
+    { image: string; nftId: number }[]
+  >([])
   const [isReadyToMint, setIsReadyToMint] = useState(false)
   const [collectionToMint, setCollectionToMint] = useState<
     GetCollectionResponse['data'] | null
@@ -145,7 +148,7 @@ export const AdminLayout = ({}: PropsWithChildren) => {
       )
 
       const images = cards.data.data.map(c => c.images.small)
-      setCardImages(images)
+      setCardImages(images.map(i => ({ image: i, nftId: -1 })))
       setIsReadyToMint(true)
     } catch (err) {
       setSnackBarData({
@@ -158,44 +161,63 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     }
   }
 
-  const getCardsForCollection = async (collectionId: string) => {
-    const cards: AxiosResponse<GetCardsReponse> = await axios.get(
-      `http://localhost:3000/api/collections/${collectionId}/cards`
-    )
-    const images = cards.data.data.map(c => c.images.small)
-    setCardImages(images)
-  }
-
   const onClickMintButton = async () => {
     try {
       if (!walletStore.mainContract || !collectionToMint) {
-        console.log('returning')
         return
       }
 
+      setIsLoading(true)
+      const cards: AxiosResponse<GetCardsReponse> = await axios.get(
+        `http://localhost:3000/api/collections/${collectionToMint.id}/cards`
+      )
       const minting = await walletStore.mainContract?.createCollection(
         collectionToMint?.name,
         collectionToMint?.id,
+        cards.data.data.map(c => c.id),
         collectionToMint?.total
       )
 
       await minting.wait()
+
       setIsReadyToMint(false)
 
       await collectionsStore.fetchCollections()
+
+      const activeCollection = collectionsStore.collections.find(
+        c => c.collectionId == collectionToMint.id
+      )
+      if (activeCollection) {
+        collectionsStore.setActiveCollection(activeCollection)
+      }
+      setCollectionToMint(null)
+      setIsLoading(false)
     } catch (err) {
       console.log(err)
     }
   }
 
   useEffect(() => {
-    const unsub = useCollectionsStore.subscribe((state, prevState) => {
-      if (
-        state.activeCollection !== prevState.activeCollection &&
-        state.activeCollection != null
-      ) {
-        getCardsForCollection(state.activeCollection.collectionId)
+    const unsub = useCollectionsStore.subscribe(async (state, prevState) => {
+      console.log('change ', state.activeCollection, prevState.activeCollection)
+      if (state.activeCollection == null) {
+        return
       }
+      console.log('is loading')
+
+      setIsLoading(true)
+      const cards: AxiosResponse<GetCardsReponse> = await axios.get(
+        `http://localhost:3000/api/collections/${state.activeCollection.collectionId}/cards`
+      )
+      const images = cards.data.data.map(c => c.images.small)
+      setCardImages(
+        images.map((i, idx) => ({
+          image: i,
+          nftId: state.activeCollection?.ntfIds[idx] ?? -1,
+        }))
+      )
+
+      setIsLoading(false)
     })
     return unsub
   }, [])
@@ -221,7 +243,15 @@ export const AdminLayout = ({}: PropsWithChildren) => {
             <Button onClick={onClickMintButton}> Mint Collection </Button>
           )}
           {!isLoading ? (
-            <CardCompenet images={cardsImages} />
+            <div className="cards-container">
+              {cardsImages.map((image, index) => (
+                <PokeCard
+                  image={image.image}
+                  nftId={image.nftId}
+                  key={image.image}
+                />
+              ))}
+            </div>
           ) : (
             <Backdrop
               sx={{ color: '#fff', zIndex: 10 }}
