@@ -209,6 +209,7 @@ export const AdminLayout = ({}: PropsWithChildren) => {
       const cards: AxiosResponse<GetCardsReponse> = await axios.get(
         `http://localhost:3000/api/collections/${state.activeCollection.collectionId}/cards`
       )
+      // const collections = 
       const images = cards.data.data.map(c => c.images.small)
       setCardImages(
         images.map((i, idx) => ({

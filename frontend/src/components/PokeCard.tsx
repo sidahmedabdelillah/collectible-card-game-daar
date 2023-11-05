@@ -19,10 +19,8 @@ import { CardType } from '@/layouts/Layout'
 import { ethers } from 'ethers'
 
 export default function PokeCard({
-  image,
   nftId,
 }: {
-  image: string
   nftId: number
 }) {
   const [imageLoaded, setImageLoaded] = useState(false)
@@ -108,7 +106,7 @@ export default function PokeCard({
       {!isFlipped ? (
         <>
           <img
-            src={image}
+            src={cardInfo?.images.small}
             onLoad={handleImageLoad}
             style={{
               opacity: imageLoaded ? 1 : 0,
