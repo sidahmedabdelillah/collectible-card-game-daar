@@ -190,7 +190,10 @@ export default function SideBar({
                     fontWeight: 700,
                     width: '10%',
                   }}
-                  onClick={() => onClickAddButton(collectionId)}
+                  onClick={() => { 
+                    const id = collectionId;
+                    setCollectionId(""); 
+                    onClickAddButton(id) }}
                 >
                   +
                 </Button>

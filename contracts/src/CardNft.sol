@@ -15,7 +15,7 @@ contract CardNFT is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   constructor(
     address initialOwner,
     string memory newbaseURI
-  ) ERC721("Pokemons", "PKM") Ownable(initialOwner) {
+  ) ERC721("CartNft", "AFS") Ownable(initialOwner) {
     _baseTokenURI = newbaseURI;
   }
 

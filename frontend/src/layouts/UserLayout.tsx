@@ -15,11 +15,15 @@ import {
 } from '@mui/material'
 import { PropsWithChildren, useEffect, useState } from 'react'
 import { MainBar } from '@/components/MainBar'
-import { useWalletStore } from '@/store/walletStore'
+import { useWalletStore, MarketListing } from '@/store/walletStore'
 import { useCollectionsStore } from '@/store/collectionsStore'
 import axios, { AxiosResponse } from 'axios'
 import PokeCard from '@/components/PokeCard'
+import PokeCardListing from '@/components/PokeCardMarket'
 // move this to a separate file later
+
+// Basic NAVIGATOR LOL
+export type UserPages = "My Cards" | "MarketPlace"
 
 export type CardType = {
   id: string
@@ -93,7 +97,7 @@ export type GetCardsReponse = {
   data: CardType[]
 }
 
-export const UserLayout = ({}: PropsWithChildren) => {
+export const UserLayout = () => {
   const walletStore = useWalletStore()
 
   const [isSnackBarOpen, setIsSnackbarOpen] = useState(false)
@@ -106,57 +110,96 @@ export const UserLayout = ({}: PropsWithChildren) => {
   >([])
 
   const [isLoading, setIsLoading] = useState(false)
+  const [marketListings, setMarketListings] = useState<MarketListing[]>([])
+  const [activePage, setActivePage] = useState<UserPages>("My Cards")
 
 
+  const getCards = async () => {
+    const cards = await walletStore.nftContract?.getTokensForOwner(walletStore.details?.account ?? "")
+    console.log({ cards })
+    const cardIds = cards?.map((c) => Number(c))
+    setCardNfts(cardIds || [])
+  }
 
+  const fetchBoosters = async () => {
+    walletStore.boosterNftContract
+  }
+
+
+  const loadMarketPlace = async () => {
+    const offers = await walletStore.getMarketplaceOffers()
+    setMarketListings(offers)
+  }
 
   useEffect(() => {
     const init = async () => {
-      if(!walletStore.details?.account){
-        return
-      }
-      const cards = await walletStore.nftContract?.getTokensForOwner(walletStore.details?.account)
-      const cardIds = cards?.map((c) => Number(c))
-      setCardNfts(cardIds || [])
+      await walletStore.updateWallet()
     }
 
     init()
   }, [])
 
+  const refresh = async () => {
+    await walletStore.updateWallet()
+    await getCards()
+    await loadMarketPlace()
+  }
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar />
-      <UserSideBar cardCount={cardNfts.length} />
+      <UserSideBar updateNfts={async () => {
+        await getCards();
+      }
+      }
+        setActivePage={setActivePage}
+        cardCount={cardNfts.length}
+        loadMarketPlace={loadMarketPlace}
+      />
 
-      {walletStore.isAdmin() ?
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          {/* <MainBar /> */}
-          <Box sx={{ marginTop: '3rem' }}>
 
-            {!isLoading ? (
-              <div className="cards-container">
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        {/* <MainBar /> */}
+        <Box sx={{ marginTop: '3rem' }}>
+
+
+          {!isLoading ? (
+            <>
+              {activePage == "My Cards" && (<div className="cards-container">
                 {cardNfts.map((ntf, index) => (
                   <PokeCard
                     nftId={ntf}
                     key={index}
                   />
                 ))}
-              </div>
-            ) : (
-              <Backdrop
-                sx={{ color: '#fff', zIndex: 10 }}
-                open={isLoading}
-                onClick={() => setIsLoading(false)}
-              >
-                <CircularProgress color="inherit" />
-              </Backdrop>
-            )}
-          </Box>
+              </div>)
+              }
+              {
+                activePage == "MarketPlace" && (
+                  <>
+                    {
+                      marketListings.map((listing, index) => (
+                        <PokeCardListing listing={listing} index={index} refresh={refresh} />
+                      ))
+                    }
+                  </>
+                )
+              }
+            </>
+          ) : (
+            <Backdrop
+              sx={{ color: '#fff', zIndex: 10 }}
+              open={isLoading}
+              onClick={() => setIsLoading(false)}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          )}
         </Box>
-        :
-        <UserLayout />
-      }
+      </Box>
+
+
 
       <Snackbar
         open={isSnackBarOpen}

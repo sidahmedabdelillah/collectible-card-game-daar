@@ -3,20 +3,44 @@ const cors = require('cors') // Import the cors module
 const morgan = require('morgan')
 const axios = require('axios')
 
-const app = express()
+
 const PORT = 3000
 const BASE_SETS_URL = 'https://api.pokemontcg.io/v2/sets'
 const BASE_CARDS_URL = 'https://api.pokemontcg.io/v2/cards'
+
+// boosters
+const boosterData = [
+  {
+      "id": 1,
+      "name": "Silver",
+      "cards": ["xy9-2", "yx9-11", "yx1-1"],
+      "cardCount": 3
+  },
+  {
+      "id": 2,
+      "name": "Gold",
+      "cards": ["xy5-2", "yx5-11", "yx5-1"],
+      "cardCount": 3
+  },
+  {
+      "id": 3,
+      "name": "Platinium",
+      "cards": ["xy3-2", "yx4-11", "yx3-1"],
+      "cardCount": 3
+  }
+]
 
 // manual cache
 const sets = {}
 const cardsForSets = {}
 const cards = {}
 
+const app = express()
 app.use(cors()) // Enable CORS for all routes
 app.use(morgan('dev'))
 
 app.get('/api/sets/:setId', (req, res) => {
+  const setId = req.params.setId
   const set = sets[req.params.setId]
   if (set) {
     return res.json(set)
@@ -24,7 +48,7 @@ app.get('/api/sets/:setId', (req, res) => {
   axios
     .get(`${BASE_SETS_URL}/${req.params.setId}`)
     .then(response => {
-      sets[setid] = response.data
+      sets[setId] = response.data
       return res.json(response.data) // Response data from the API
     })
     .catch(error => {
@@ -62,6 +86,14 @@ app.get('/api/collections/:collectionId/cards', async (req, res) => {
   } catch (err) {
     return res.json({ error: err.message })
   }
+})
+
+app.get("/api/boosters/", (req, res) => {
+  return res.json(boosterData);
+})
+
+app.get("/api/boosters/:boosterId", (req, res) => {
+  return res.json(boosterData[req.params.boosterId]);
 })
 
 app.listen(PORT, () => {

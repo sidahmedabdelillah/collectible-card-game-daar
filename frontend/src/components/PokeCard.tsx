@@ -29,7 +29,7 @@ export default function PokeCard({
   const [cardInfo, setCardInfo] = useState<CardType>()
   const [owner, setOwner] = useState<string>('')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
-
+  const [isForSaleOpen, setIsForSaleOpen] = useState(false)
   const walletStore = useWalletStore()
 
   const isOwner = useMemo(
@@ -92,6 +92,14 @@ export default function PokeCard({
 
   useEffect(() => { getInfo() }, [])
 
+  const setForSale = async (v: number) => {
+    if (!isOwner) {
+      return
+    }
+    const tx = await walletStore.marketContract?.listNFT(nftId, v)
+    await tx.wait()
+  }
+
 
 
   return (
@@ -138,10 +146,7 @@ export default function PokeCard({
               <CircularProgress />
             </Box>
           )}
-          <Skeleton
-            variant="rectangular"
-            style={{ position: 'absolute', width: '100%', height: '100%' }}
-          />
+
         </>
       ) : (
         <Box
@@ -187,13 +192,22 @@ export default function PokeCard({
               }}
             />
             {owner == walletStore.details?.account && (
-              <Button
-                color="error"
-                variant="contained"
-                onClick={() => setIsDialogOpen(true)}
-              >
-                Transfer Card
-              </Button>
+              <>
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={() => setIsDialogOpen(true)}
+                >
+                  Transfer Card
+                </Button>
+                <Button
+                  color="error"
+                  variant="contained"
+                  onClick={() => setIsForSaleOpen(true)}
+                >
+                  Sell Card
+                </Button>
+              </>
             )}
           </Box>
         </Box>
@@ -204,6 +218,13 @@ export default function PokeCard({
         setIsOpen={setIsDialogOpen}
         transferNft={transferNft}
       />
+      <SetForSaleDialog
+        isOpen={isForSaleOpen}
+        name={cardInfo?.name}
+        setIsOpen={setIsForSaleOpen}
+        setForSale={setForSale}
+      />
+
     </div>
   )
 }
@@ -250,6 +271,52 @@ const TransferCardDialog = ({
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
           <Button onClick={() => transferNft(address)}>Send</Button>
+        </DialogActions>
+      </Dialog>
+    </>
+  )
+}
+
+const SetForSaleDialog = ({
+  isOpen,
+  setIsOpen,
+  name,
+  setForSale,
+}: {
+  isOpen: boolean
+  name?: string
+  setIsOpen: (val: boolean) => void
+  setForSale: (ad: number) => Promise<void>
+}) => {
+  const [price, setPrice] = useState<number>(0)
+
+  const handleClose = () => {
+    setIsOpen(false)
+  }
+
+  return (
+    <>
+      <Dialog open={isOpen} onClose={handleClose}>
+        <DialogTitle>Transfer NFT </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            To set the NFT {name} for sale, please enter the price of the NFT.
+          </DialogContentText>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="address"
+            label="Receiver address"
+            type="number"
+            fullWidth
+            variant="standard"
+            value={price}
+            onChange={e => setPrice(Number(e.target.value))}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={() => setForSale(price)}>Send</Button>
         </DialogActions>
       </Dialog>
     </>

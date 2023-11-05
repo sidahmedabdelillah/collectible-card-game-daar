@@ -18,7 +18,7 @@ import { useWalletStore } from '@/store/walletStore'
 import { useCollectionsStore } from '@/store/collectionsStore'
 import axios, { AxiosResponse } from 'axios'
 import PokeCard from '@/components/PokeCard'
-import { UserLayout } from '@/layouts/UserLayout'
+import PokeCardNonNft from '@/components/PokeCardNonNft'
 // move this to a separate file later
 
 export type GetCollectionResponse = {
@@ -115,7 +115,7 @@ export type GetCardsReponse = {
   data: CardType[]
 }
 
-export const AdminLayout = ({}: PropsWithChildren) => {
+export const AdminLayout = ({ }: PropsWithChildren) => {
   const walletStore = useWalletStore()
   const collectionsStore = useCollectionsStore()
 
@@ -132,24 +132,28 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     GetCollectionResponse['data'] | null
   >(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [imagesToMint, setImagesToMint] = useState<{ image: string }[]>([])
 
   const onClickAddButton = async (collectionId: string) => {
     try {
       setIsLoading(true)
       const {
-        data: { data },
+        data,
       }: AxiosResponse<GetCollectionResponse> = await axios.get(
         `http://localhost:3000/api/sets/${collectionId}`
       )
 
-      setCollectionToMint(data)
+      console.log("raw response: " ,data)
+
+
+      setCollectionToMint(data.data)
 
       const cards: AxiosResponse<GetCardsReponse> = await axios.get(
         `http://localhost:3000/api/collections/${collectionId}/cards`
       )
 
       const images = cards.data.data.map(c => c.images.small)
-      setCardImages(images.map(i => ({ image: i, nftId: -1 })))
+      setImagesToMint(images.map(i => ({ image: i })))
       setIsReadyToMint(true)
     } catch (err) {
       setSnackBarData({
@@ -164,7 +168,9 @@ export const AdminLayout = ({}: PropsWithChildren) => {
 
   const onClickMintButton = async () => {
     try {
+      console.log('minting')
       if (!walletStore.mainContract || !collectionToMint) {
+        console.log("returning ", walletStore.mainContract ,collectionToMint)
         return
       }
 
@@ -172,12 +178,20 @@ export const AdminLayout = ({}: PropsWithChildren) => {
       const cards: AxiosResponse<GetCardsReponse> = await axios.get(
         `http://localhost:3000/api/collections/${collectionToMint.id}/cards`
       )
+      console.log('cards ', cards.data.data)
+      console.log("minting with input :" ,{
+        name: collectionToMint?.name,
+        collectionId: collectionToMint?.id,
+        cardsIds: cards.data.data.map(c => c.id),
+        cardCount: collectionToMint?.total
+      })
       const minting = await walletStore.mainContract?.createCollection(
         collectionToMint?.name,
         collectionToMint?.id,
         cards.data.data.map(c => c.id),
         collectionToMint?.total
       )
+      console.log('minting ', minting)
 
       await minting.wait()
 
@@ -237,38 +251,43 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar />
-      <SideBar onClickAddButton={onClickAddButton} isAdmin={walletStore.isAdmin()}/>
+      <SideBar onClickAddButton={onClickAddButton} isAdmin={walletStore.isAdmin()} />
 
-      {walletStore.isAdmin() ?
-        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-          {/* <MainBar /> */}
-          <Box sx={{ marginTop: '3rem' }}>
-            {isReadyToMint && (
-              <Button onClick={onClickMintButton}> Mint Collection </Button>
-            )}
-            {!isLoading ? (
-              <div className="cards-container">
-                {cardsImages.map((image, index) => (
-                  <PokeCard
-                    nftId={image.nftId}
-                    key={image.image}
-                  />
-                ))}
-              </div>
-            ) : (
-              <Backdrop
-                sx={{ color: '#fff', zIndex: 10 }}
-                open={isLoading}
-                onClick={() => setIsLoading(false)}
-              >
-                <CircularProgress color="inherit" />
-              </Backdrop>
-            )}
-          </Box>
+
+      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+        {/* <MainBar /> */}
+        <Box sx={{ marginTop: '3rem' }}>
+          {isReadyToMint && (
+            <Button onClick={onClickMintButton}> Mint Collection </Button>
+          )}
+          {!isLoading ? (
+            <div className="cards-container">
+              {
+                isReadyToMint && (
+                  imagesToMint.map((image, index) => (
+                    <PokeCardNonNft image={image.image} key={index} />
+                  ))
+                )
+              }
+              {!isReadyToMint && cardsImages.map((image, index) => (
+                <PokeCard
+                  nftId={image.nftId}
+                  key={image.image}
+                />
+              ))}
+            </div>
+          ) : (
+            <Backdrop
+              sx={{ color: '#fff', zIndex: 10 }}
+              open={isLoading}
+              onClick={() => setIsLoading(false)}
+            >
+              <CircularProgress color="inherit" />
+            </Backdrop>
+          )}
         </Box>
-        :
-        <UserLayout />
-      }
+      </Box>
+
 
       <Snackbar
         open={isSnackBarOpen}

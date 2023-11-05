@@ -13,6 +13,7 @@ import {
   ListItemText,
 } from '@mui/material'
 import { useState } from 'react'
+import type { UserPages } from '../layouts/UserLayout'
 
 const drawerWidth = 240
 
@@ -83,7 +84,7 @@ const NavMenuItem = ({
   )
 }
 
-export default function UserSideBar({ cardCount }: { cardCount: number }) {
+export default function UserSideBar({ cardCount, updateNfts, setActivePage,loadMarketPlace }: { cardCount: number, updateNfts: () => Promise<void>, setActivePage: (page: UserPages) => void, loadMarketPlace: () => Promise<void> }) {
 
   return (
     <Drawer
@@ -135,13 +136,28 @@ export default function UserSideBar({ cardCount }: { cardCount: number }) {
               count: cardCount,
             }}
             level={0.5}
-            onClick={() => {
-              // TODO do this
-              console.log("clicked")
+            onClick={async () => {
+              setActivePage("My Cards");
+              await updateNfts()
             }}
             // TODO do this        
             isActive={false}
           />
+
+          <NavMenuItem
+            item={{
+              title: "MarketPlace",
+              count: 0,
+            }}
+            level={0.5}
+            onClick={async () => {
+              setActivePage("MarketPlace");
+              await loadMarketPlace()
+            }}
+            // TODO do this        
+            isActive={false}
+          />
+
 
         </List>
 

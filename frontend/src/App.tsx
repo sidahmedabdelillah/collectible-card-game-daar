@@ -9,22 +9,34 @@ export const App = () => {
   const theme = createTheme()
   const walletStore = useWalletStore()
 
+  
 
   useEffect(() => {
     const init = async () => {
       await walletStore.updateWallet()
     }
+
+    useWalletStore.subscribe((newState , oldState) => {
+      if(!oldState.details?.account){
+        return
+      }
+  
+      if(newState.details?.account !== oldState.details?.account){
+        window.location.reload()
+      }
+    })
+
     init()
   }, [])
+  
+
 
   return (
     <ThemeProvider theme={theme}>
       {
-        walletStore.isAdmin() ? (
-          <AdminLayout />
-        ) : (
-          <UserLayout />
-        )
+        walletStore.details &&
+          walletStore.isAdmin() ? (<AdminLayout />) : (<UserLayout />)
+
       }
     </ThemeProvider>
   )

@@ -2,6 +2,7 @@
 pragma solidity ^0.8;
 
 import "./Collection.sol";
+import "./BoosterNft.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
@@ -10,9 +11,8 @@ contract Main is Ownable {
 
   Collection[] private collections;
   mapping(string => Collection) private collectionsByName;
-  mapping(address => Collection[]) private collectionsByAddress;
-  mapping(uint256 => Collection) private collectionByCard;
   address private _cardNftContract;
+  address private _boosterContract;
 
   struct CollectionStruct {
     string name;
@@ -21,26 +21,26 @@ contract Main is Ownable {
     uint256[] cards;
   }
 
-  constructor(address _address, address _owner) Ownable(_owner) {
+  constructor(address _address, address _boosterNft, address _owner) Ownable(_owner) {
     count = 0;
     _cardNftContract = _address;
+    _boosterContract = _boosterNft;
   }
 
   function transferCard(address to, uint256 cardId) public {
-    Collection collection = collectionByCard[cardId];
     CardNFT cardNFT = CardNFT(_cardNftContract);
     address from = cardNFT.ownerOf(cardId);
     require(msg.sender == from, "You must be the owner of the card !");
     cardNFT.transferFrom(from, to, cardId);
-    // check the key
-    Collection[] storage toCollection = collectionsByAddress[to];
-    for(uint256 i = 0; i < toCollection.length; i++) {
-      if(toCollection[i] == collection) {
-        return;
-      }
-    }
-    toCollection.push(collection);
   }
+
+  function transferBooster(address to, uint256 boosterId) public {
+    BoosterNft boosterNft = BoosterNft(_boosterContract);
+    address from = boosterNft.ownerOf(boosterId);
+    require(msg.sender == from, "You must be the owner of the card !");
+    boosterNft.transferFrom(from, to, boosterId);
+  }
+
 
   function createCollection(
     string calldata name,
@@ -61,7 +61,6 @@ contract Main is Ownable {
 
       // add to cards
       newCollection.addCard(cardId);
-      collectionByCard[cardId] = newCollection;
     }
 
     collections.push(newCollection);
@@ -97,51 +96,6 @@ contract Main is Ownable {
     return collectionStructs;
   }
 
-  function getCollectionsByAddress(address _address) public view returns (CollectionStruct[] memory) {
-    // create an array of collectionStructs
-    // Todo handle the case where the key does not exists
-    Collection[] memory userCollections = collectionsByAddress[_address];
-    CollectionStruct[] memory collectionStructs = new CollectionStruct[](
-      userCollections.length
-    );
-    CardNFT cardNFT = CardNFT(_cardNftContract);
-    // loop through collections
-    for (uint i = 0; i < userCollections.length; i++) {
-      // get collection
-      Collection collection = userCollections[i];
-      // get name
-      string memory name = collection.name();
-      string memory collectionId = collection.collectionId();
-      // get cardCount
-      uint256 cardCount = collection.cardCount();
-      // get cardNftContract
-      uint256[] memory cards = collection.getCards();
-      uint256 numberOfCards = 0;
-      for (uint j = 0; j < cards.length; j++) {
-        if(cardNFT.ownerOf(cards[j]) == _address) {
-          numberOfCards ++;
-        }
-      }
-      uint256[] memory userCards = new uint256[](numberOfCards);
-      uint256 cardIndex = 0;
-      for (uint j = 0; j < cards.length; j++) {
-        if(cardNFT.ownerOf(cards[j]) == _address) {
-          userCards[cardIndex] = cards[j];
-          cardIndex ++;
-        }
-      }
-      // create collectionStruct
-      CollectionStruct memory collectionStruct = CollectionStruct(
-        name,
-        collectionId,
-        cardCount,
-        userCards
-      );
-      // add to collectionStructs
-      collectionStructs[i] = collectionStruct;
-    }
-    return collectionStructs;
-  }
 
   function getCollectionById(
     uint256 id
