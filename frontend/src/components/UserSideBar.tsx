@@ -13,7 +13,6 @@ import {
   ListItemText,
 } from '@mui/material'
 import { useState } from 'react'
-import { useCollectionsStore } from '@/store/collectionsStore'
 
 const drawerWidth = 240
 
@@ -21,6 +20,8 @@ export type NavItemType = {
   title: string
   count?: number
 }
+
+
 
 const NavMenuItem = ({
   item,
@@ -82,15 +83,7 @@ const NavMenuItem = ({
   )
 }
 
-export default function SideBar({
-  onClickAddButton,
-  isAdmin
-}: {
-  onClickAddButton: (id: string) => any
-  isAdmin: boolean
-}) {
-  const collectionStore = useCollectionsStore()
-  const [collectionId, setCollectionId] = useState('')
+export default function UserSideBar({ cardCount }: { cardCount: number }) {
 
   return (
     <Drawer
@@ -136,68 +129,20 @@ export default function SideBar({
             </Box>
           }
         >
-          {collectionStore.collections.map((collection, index) => (
-            <NavMenuItem
-              item={{
-                title: collection.name,
-                count: collection.cardCount,
-              }}
-              level={0.5}
-              onClick={() => collectionStore.setActiveCollection(collection)}
-              key={collection.name}
-              isActive={collection.collectionId == collectionStore.activeCollection?.collectionId}
-            />
-          ))}
+          <NavMenuItem
+            item={{
+              title: "My collection",
+              count: cardCount,
+            }}
+            level={0.5}
+            onClick={() => {
+              // TODO do this
+              console.log("clicked")
+            }}
+            // TODO do this        
+            isActive={false}
+          />
 
-          <ListItem>
-            {isAdmin &&
-              <Box
-                display="flex"
-                sx={{
-                  borderRadius: '5px',
-                }}
-                bgcolor={'#4a306e'}
-              >
-                <input
-                  type="text"
-                  style={{
-                    backgroundColor: '#4a306e',
-                    outline: 'none',
-                    border: 'none',
-                    fontSize: '0.8rem',
-                    paddingTop: '10px',
-                    paddingRight: '0px',
-                    paddingBottom: '10px',
-                    paddingLeft: '10px',
-                    color: '#d1cfd4',
-                    fontWeight: 700,
-                    borderRadius: '5px',
-                    width: '90%',
-                    borderTopRightRadius: '0',
-                    borderBottomRightRadius: '0',
-                    borderTopLeftRadius: '5px',
-                    borderBottomLeftRadius: '5px',
-                    borderRight: '0.5px solid rgba(255,255,255,0.2)',
-                  }}
-                  onChange={(e: any) => setCollectionId(e.target.value)}
-                />
-                <Button
-                  variant="text"
-                  size="small"
-                  sx={{
-                    color: 'white',
-                    fontSize: '1rem',
-                    fontWeight: 700,
-                    width: '10%',
-                  }}
-                  onClick={() => onClickAddButton(collectionId)}
-                >
-                  +
-                </Button>
-              </Box>
-            }
-
-          </ListItem>
         </List>
 
         {/* group divider */}

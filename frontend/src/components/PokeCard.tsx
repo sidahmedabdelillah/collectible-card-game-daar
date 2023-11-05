@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   Box,
   Button,
@@ -73,6 +73,10 @@ export default function PokeCard({
         const { data }: AxiosResponse<{ data: CardType }> = await axios.get(
           reqUri
         )
+        if (!data.data) {
+          console.log(reqUri)
+        }
+
         setCardInfo(data.data)
       }
     } catch (err) {
@@ -86,6 +90,10 @@ export default function PokeCard({
     setImageLoaded(true)
   }
 
+  useEffect(() => { getInfo() }, [])
+
+
+
   return (
     <div
       className="card"
@@ -97,7 +105,6 @@ export default function PokeCard({
         cursor: 'pointer',
       }}
       onClick={async () => {
-        await getInfo()
         if (imageLoaded) {
           setTimeout(() => setIsFliped(!isFlipped), 500)
         }

@@ -18,6 +18,7 @@ import { useWalletStore } from '@/store/walletStore'
 import { useCollectionsStore } from '@/store/collectionsStore'
 import axios, { AxiosResponse } from 'axios'
 import PokeCard from '@/components/PokeCard'
+import { UserLayout } from '@/layouts/UserLayout'
 // move this to a separate file later
 
 export type GetCollectionResponse = {
@@ -205,7 +206,7 @@ export const AdminLayout = ({}: PropsWithChildren) => {
       }
       console.log('is loading')
 
-      setIsLoading(true)
+      // setIsLoading(true)
       const cards: AxiosResponse<GetCardsReponse> = await axios.get(
         `http://localhost:3000/api/collections/${state.activeCollection.collectionId}/cards`
       )
@@ -218,7 +219,7 @@ export const AdminLayout = ({}: PropsWithChildren) => {
         }))
       )
 
-      setIsLoading(false)
+      setIsLoading(false);
     })
     return unsub
   }, [])
@@ -236,34 +237,39 @@ export const AdminLayout = ({}: PropsWithChildren) => {
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
       <AppBar />
-      <SideBar onClickAddButton={onClickAddButton} />
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        {/* <MainBar /> */}
-        <Box sx={{ marginTop: '3rem' }}>
-          {isReadyToMint && (
-            <Button onClick={onClickMintButton}> Mint Collection </Button>
-          )}
-          {!isLoading ? (
-            <div className="cards-container">
-              {cardsImages.map((image, index) => (
-                <PokeCard
-                  image={image.image}
-                  nftId={image.nftId}
-                  key={image.image}
-                />
-              ))}
-            </div>
-          ) : (
-            <Backdrop
-              sx={{ color: '#fff', zIndex: 10 }}
-              open={isLoading}
-              onClick={() => setIsLoading(false)}
-            >
-              <CircularProgress color="inherit" />
-            </Backdrop>
-          )}
+      <SideBar onClickAddButton={onClickAddButton} isAdmin={walletStore.isAdmin()}/>
+
+      {walletStore.isAdmin() ?
+        <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
+          {/* <MainBar /> */}
+          <Box sx={{ marginTop: '3rem' }}>
+            {isReadyToMint && (
+              <Button onClick={onClickMintButton}> Mint Collection </Button>
+            )}
+            {!isLoading ? (
+              <div className="cards-container">
+                {cardsImages.map((image, index) => (
+                  <PokeCard
+                    nftId={image.nftId}
+                    key={image.image}
+                  />
+                ))}
+              </div>
+            ) : (
+              <Backdrop
+                sx={{ color: '#fff', zIndex: 10 }}
+                open={isLoading}
+                onClick={() => setIsLoading(false)}
+              >
+                <CircularProgress color="inherit" />
+              </Backdrop>
+            )}
+          </Box>
         </Box>
-      </Box>
+        :
+        <UserLayout />
+      }
+
       <Snackbar
         open={isSnackBarOpen}
         autoHideDuration={6000}
