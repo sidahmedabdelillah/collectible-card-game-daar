@@ -13,7 +13,7 @@ import {
   ListItemText,
 } from '@mui/material'
 import { useState } from 'react'
-import type { UserPages } from '../layouts/UserLayout'
+import type { UserPages, BoosterFromApiType } from '../layouts/UserLayout'
 
 const drawerWidth = 240
 
@@ -84,7 +84,7 @@ const NavMenuItem = ({
   )
 }
 
-export default function UserSideBar({ cardCount, updateNfts, setActivePage,loadMarketPlace }: { cardCount: number, updateNfts: () => Promise<void>, setActivePage: (page: UserPages) => void, loadMarketPlace: () => Promise<void> }) {
+export default function UserSideBar({ boosterIds, cardCount, updateNfts, setActivePage, loadMarketPlace, setActiveBooster, boostersFromApi }: { cardCount: number, updateNfts: () => Promise<void>, setActivePage: (page: UserPages) => void, loadMarketPlace: () => Promise<void>, boosterIds: number[], setActiveBooster: (id: number) => void ,boostersFromApi: BoosterFromApiType[]}) {
 
   return (
     <Drawer
@@ -157,8 +157,52 @@ export default function UserSideBar({ cardCount, updateNfts, setActivePage,loadM
             // TODO do this        
             isActive={false}
           />
+        </List>
 
-
+        <List
+          sx={{ paddingLeft: '10px' }}
+          subheader={
+            <Box
+              display="flex"
+              sx={{
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <AppsIcon fontSize="large" sx={{ color: 'white' }} />
+              <Typography
+                variant="caption"
+                display="block"
+                gutterBottom
+                sx={{
+                  fontSize: '1.2rem',
+                  fontWeight: 600,
+                  color: 'white',
+                  padding: '6px',
+                  textTransform: 'capitalize',
+                  marginTop: '10px',
+                }}
+              >
+                Boosters
+              </Typography>
+            </Box>
+          }
+        >
+          {boosterIds.map((id, idx) => {
+            return (<NavMenuItem
+              item={{
+                title: boostersFromApi[idx].name,
+                count: boostersFromApi[idx].cardCount,
+              }}
+              level={0.5}
+              onClick={async () => {
+                setActivePage("Boosters");
+                await loadMarketPlace()
+              }}
+              // TODO do this        
+              isActive={false}
+            />)
+          })}
         </List>
 
         {/* group divider */}

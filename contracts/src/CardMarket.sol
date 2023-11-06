@@ -45,7 +45,7 @@ contract CardMarket is Ownable {
       "Price must be greater than or equal to the listing price"
     );
 
-    nftContract.approve(this, tokenId);
+    nftContract.approve(address(this), _tokenId);
 
     listings.push(
       Listing({

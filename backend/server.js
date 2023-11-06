@@ -11,22 +11,19 @@ const BASE_CARDS_URL = 'https://api.pokemontcg.io/v2/cards'
 // boosters
 const boosterData = [
   {
-      "id": 1,
-      "name": "Silver",
-      "cards": ["xy9-2", "yx9-11", "yx1-1"],
-      "cardCount": 3
+    "id": 1,
+    "name": "Silver",
+    "cardCount": 3
   },
   {
-      "id": 2,
-      "name": "Gold",
-      "cards": ["xy5-2", "yx5-11", "yx5-1"],
-      "cardCount": 3
+    "id": 2,
+    "name": "Gold",
+    "cardCount": 3
   },
   {
-      "id": 3,
-      "name": "Platinium",
-      "cards": ["xy3-2", "yx4-11", "yx3-1"],
-      "cardCount": 3
+    "id": 3,
+    "name": "Platinium",
+    "cardCount": 3
   }
 ]
 

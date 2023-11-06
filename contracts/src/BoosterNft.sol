@@ -14,10 +14,11 @@ contract BoosterNft is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
   string private _baseTokenURI;
   address private _cardNftContract;
 
+  uint256[] public boosterIds ;
+
   string public boosterName;
   uint256 public cardCount;
   // list of CardNft nfts
-  uint256[] public cards;
   mapping(uint256 => uint256[]) public boosterCards;
 
   constructor(
@@ -34,6 +35,10 @@ contract BoosterNft is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     return boosterCards[boosterId];
   }
 
+  function getBoosterIds( ) public view returns (uint256[] memory) {
+    return boosterIds;
+  }
+
   function _update(
     address to,
     uint256 tokenId,
@@ -47,6 +52,7 @@ contract BoosterNft is ERC721, ERC721Enumerable, ERC721URIStorage, Ownable {
     _safeMint(to, tokenId);
     _setTokenURI(tokenId, string.concat(_baseTokenURI , boosterId));
     boosterCards[tokenId] = cards;
+    boosterIds.push(tokenId);
     return tokenId;
   }
 

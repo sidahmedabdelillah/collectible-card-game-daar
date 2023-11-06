@@ -23,7 +23,7 @@ import PokeCardListing from '@/components/PokeCardMarket'
 // move this to a separate file later
 
 // Basic NAVIGATOR LOL
-export type UserPages = "My Cards" | "MarketPlace"
+export type UserPages = "My Cards" | "MarketPlace" | "Boosters"
 
 export type CardType = {
   id: string
@@ -97,6 +97,12 @@ export type GetCardsReponse = {
   data: CardType[]
 }
 
+export type BoosterFromApiType = {
+  "id": number,
+  "name": string,
+  "cardCount": number
+}
+
 export const UserLayout = () => {
   const walletStore = useWalletStore()
 
@@ -112,7 +118,10 @@ export const UserLayout = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [marketListings, setMarketListings] = useState<MarketListing[]>([])
   const [activePage, setActivePage] = useState<UserPages>("My Cards")
-
+  const [boosterIds, setBoosterIds] = useState<number[]>([])
+  const [activeBooster, setActiveBooster] = useState<number | null>(null)
+  const [boostersFromApi, setBoostersFromApi] = useState<BoosterFromApiType[]>([])
+  const [cardsForBoosterToShow, setCardsForBoosterToShow] = useState<number[]>([])
 
   const getCards = async () => {
     const cards = await walletStore.nftContract?.getTokensForOwner(walletStore.details?.account ?? "")
@@ -122,7 +131,13 @@ export const UserLayout = () => {
   }
 
   const fetchBoosters = async () => {
-    walletStore.boosterNftContract
+    const booster = await walletStore.boosterNftContract?.getBoosterIds();
+    setBoosterIds(booster?.map(i => Number(i)) || [])
+    const { data } = await axios.get<BoosterFromApiType[]>("http://localhost:3000/api/boosters")
+    if (!data) {
+      return
+    }
+    setBoostersFromApi(data)
   }
 
 
@@ -134,6 +149,7 @@ export const UserLayout = () => {
   useEffect(() => {
     const init = async () => {
       await walletStore.updateWallet()
+      await fetchBoosters()
     }
 
     init()
@@ -144,6 +160,14 @@ export const UserLayout = () => {
     await getCards()
     await loadMarketPlace()
   }
+
+  useEffect(() => {
+    const cards = walletStore.boosterNftContract?.getCardsforBooster(activeBooster ?? 0).then(
+      (cards) => {
+        setCardsForBoosterToShow(cards?.map(c => Number(c)) || [])
+      }
+    )
+  }, [activeBooster])
 
   return (
     <Box sx={{ display: 'flex' }}>
@@ -156,6 +180,9 @@ export const UserLayout = () => {
         setActivePage={setActivePage}
         cardCount={cardNfts.length}
         loadMarketPlace={loadMarketPlace}
+        setActiveBooster={setActiveBooster}
+        boosterIds={boosterIds}
+        boostersFromApi={boostersFromApi}
       />
 
 
@@ -181,6 +208,17 @@ export const UserLayout = () => {
                     {
                       marketListings.map((listing, index) => (
                         <PokeCardListing listing={listing} index={index} refresh={refresh} />
+                      ))
+                    }
+                  </>
+                )
+              }
+              {
+                activePage == "Boosters" && (
+                  <>
+                    {
+                      cardsForBoosterToShow.map((cardId, index) => (
+                        <PokeCard nftId={cardId} key={index} />
                       ))
                     }
                   </>
